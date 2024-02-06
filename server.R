@@ -31,7 +31,7 @@ server = function(input, output, session) {
   #display the valuebox of number of collectors
   output$nb_col <- renderValueBox({
     valueBox(value=nrow(filteblue_data()),
-             subtitle = "Number of collectors", color = "blue")
+             subtitle = "Number of collectors", color = "blue") #,icon=icon("person-half-dress")
    })
 
   #displays the valuebox of average of the householsize
@@ -43,10 +43,10 @@ server = function(input, output, session) {
   output$nb_house <- renderValueBox({
     if (nrow(filteblue_data())==0){
       valueBox(subtitle = "Mean of household size",value= paste("No data"),
-               color="blue" )
+               color="blue") #,icon=icon("person-half-dress"
     } else {
       valueBox(subtitle = "Mean of household size",value=round(mean(filteblue_data()$householdsize)),
-                          color="blue")
+                          color="blue") #,icon=icon("person-half-dress")
     }
 
   })
@@ -55,10 +55,10 @@ server = function(input, output, session) {
   output$coll_exp <- renderValueBox({
     if (nrow(filteblue_data())==0){
       valueBox(subtitle = "Mean of collector's experience",value= paste("No data"),
-               color="blue" )
+               color="blue") #, icon = icon("star")
     } else {
       valueBox(subtitle = "Mean of collector's experience", value=round(mean(filteblue_data()$Collectexp)),
-               color="blue")
+               color="blue") #,icon = icon("star")
     }
   })
 
@@ -1107,47 +1107,85 @@ server = function(input, output, session) {
     req(input$loc, input$season)
     if (input$loc == "All" & input$season =="All") {
       mat <- as.matrix(data_f %>% select(householdsize,Collectexp,`Quantity(bucket)`))
-      res2 <- rcorr(mat)
-      flat_matrix<-flattenCorrMatrix(round(res2$r,digits = 2), round(res2$P,digits = 2))
+      if (nrow(mat)<4) {
+        flat_matrix <- data.frame()
+      } else {
+        res2 <- rcorr(mat)
+        flat_matrix<-flattenCorrMatrix(round(res2$r,digits = 2), round(res2$P,digits = 2))
+      }
     } else if (input$loc != "All") {
       if (input$season =="All") {
         dat <-data_f %>%
           filter(locality == input$loc) %>%
           select(householdsize,Collectexp,`Quantity(bucket)`)
         mat <- as.matrix(dat)
-        res2 <- rcorr(mat)
-        flat_matrix<-flattenCorrMatrix(round(res2$r,digits = 2), round(res2$P,digits = 2))
+        if (nrow(mat)<4) {
+          flat_matrix <- data.frame()
+        } else {
+          res2 <- rcorr(mat)
+          flat_matrix<-flattenCorrMatrix(round(res2$r,digits = 2), round(res2$P,digits = 2))
+        }
+
       } else {
         dat <-data_f %>%
           filter(locality == input$loc,
                  Season == input$season) %>%
           select(householdsize,Collectexp,`Quantity(bucket)`)
         mat <- as.matrix(dat)
-        res2 <- rcorr(mat)
-        flat_matrix<-flattenCorrMatrix(round(res2$r,digits = 2), round(res2$P,digits = 2))
+        if (nrow(mat)<4) {
+          flat_matrix <- data.frame()
+        } else {
+          res2 <- rcorr(mat)
+          flat_matrix<-flattenCorrMatrix(round(res2$r,digits = 2), round(res2$P,digits = 2))
+        }
       }
     }
   }, ignoreNULL = FALSE)
 
+  # data_cormat <- eventReactive(input$action,{
+  #   req(input$loc, input$season)
+  #   if (input$loc == "All" & input$season =="All") {
+  #     mat <- as.matrix(data_f %>% select(householdsize,Collectexp,`Quantity(bucket)`))
+  #     res2 <- rcorr(mat)
+  #     flat_matrix<-flattenCorrMatrix(round(res2$r,digits = 2), round(res2$P,digits = 2))
+  #   } else if (input$loc != "All") {
+  #     if (input$season =="All") {
+  #       dat <-data_f %>%
+  #         filter(locality == input$loc) %>%
+  #         select(householdsize,Collectexp,`Quantity(bucket)`)
+  #       mat <- as.matrix(dat)
+  #       res2 <- rcorr(mat)
+  #       flat_matrix<-flattenCorrMatrix(round(res2$r,digits = 2), round(res2$P,digits = 2))
+  #     } else {
+  #       dat <-data_f %>%
+  #         filter(locality == input$loc,
+  #                Season == input$season) %>%
+  #         select(householdsize,Collectexp,`Quantity(bucket)`)
+  #       mat <- as.matrix(dat)
+  #       res2 <- rcorr(mat)
+  #       flat_matrix<-flattenCorrMatrix(round(res2$r,digits = 2), round(res2$P,digits = 2))
+  #     }
+  #   }
+  # }, ignoreNULL = FALSE)
+
   #correlation matrix
-  output$cor_mat <- DT::renderDataTable({
-    if (input$season !="rainy season" & input$season !="All") {
-      datatable(data.frame(Message = "No correlation table because no data for the combination region:" ,
-                           input$loc, " and season:", input$season))
-    } else {
-      datatable(data_cormat())
-    }
-
-  })
-
   # output$cor_mat <- DT::renderDataTable({
-  #   data <- data_cormat()
-  #   validate(
-  #       need(nrow(data$mat) > 0, paste('No data exists for the combination region = ', input$loc,
-  #                                           'and season = ', input$season, 'of correlation matrix')))
-  #   datatable(data_cormat())
+  #   if (input$season !="rainy season" & input$season !="All") {
+  #     datatable(data.frame(Message = "No correlation table because no data for the combination region:" ,
+  #                          input$loc, " and season:", input$season))
+  #   } else {
+  #     datatable(data_cormat())
+  #   }
   #
   # })
+
+  output$cor_mat <- DT::renderDataTable({
+    validate(
+        need(nrow(data_cormat()) > 0, paste('No data exists for the combination region = ', input$loc,
+                                            'and season = ', input$season, 'of correlation matrix')))
+    datatable(data_cormat())
+
+  })
 
   #data for the correlogram
   data_corr <- eventReactive(input$action,{
