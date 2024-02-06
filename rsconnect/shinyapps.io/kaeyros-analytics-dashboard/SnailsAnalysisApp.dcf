@@ -1,0 +1,12 @@
+name: SnailsAnalysisApp
+title: SnailsAnalysisApp
+username: kaeyros-analytics-dashboard
+account: kaeyros-analytics-dashboard
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 11125050
+bundleId: 8216896
+url: https://kaeyros-analytics-dashboard.shinyapps.io/SnailsAnalysisApp/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
