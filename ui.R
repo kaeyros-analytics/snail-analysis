@@ -15,7 +15,7 @@ dashboardPage(
                 tags$head(tags$style(HTML(".small-box {height: 100px}"))),
                 valueBoxOutput("nb_col", width = 2),
                 valueBoxOutput("nb_house", width = 2),
-                valueBoxOutput("coll_exp", width=3),
+                valueBoxOutput("coll_exp", width=3.),
               ),
               fluidRow(
                 box(width = 6, title= "", plotlyOutput("gender") ),

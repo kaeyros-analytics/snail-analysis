@@ -723,7 +723,7 @@ server = function(input, output, session) {
         'sendDataToCloud',
         #'toImage',
         #'autoScale2d',
-        'toggleSpikelines',
+         'toggleSpikelines',
         'resetScale2d',
         'lasso2d',
         'zoom2d',
@@ -1108,7 +1108,7 @@ server = function(input, output, session) {
     if (input$loc == "All" & input$season =="All") {
       mat <- as.matrix(data_f %>% select(householdsize,Collectexp,`Quantity(bucket)`))
       if (nrow(mat)<4) {
-        flat_matrix <- data.frame()
+        flat_matrix <- round(cor(mat),2)
       } else {
         res2 <- rcorr(mat)
         flat_matrix<-flattenCorrMatrix(round(res2$r,digits = 2), round(res2$P,digits = 2))
@@ -1120,7 +1120,7 @@ server = function(input, output, session) {
           select(householdsize,Collectexp,`Quantity(bucket)`)
         mat <- as.matrix(dat)
         if (nrow(mat)<4) {
-          flat_matrix <- data.frame()
+          flat_matrix <- round(cor(mat),2)
         } else {
           res2 <- rcorr(mat)
           flat_matrix<-flattenCorrMatrix(round(res2$r,digits = 2), round(res2$P,digits = 2))
@@ -1133,40 +1133,15 @@ server = function(input, output, session) {
           select(householdsize,Collectexp,`Quantity(bucket)`)
         mat <- as.matrix(dat)
         if (nrow(mat)<4) {
-          flat_matrix <- data.frame()
+          flat_matrix <- round(cor(mat),2)
         } else {
-          res2 <- rcorr(mat)
+          res2 <- (rcorr(mat))
           flat_matrix<-flattenCorrMatrix(round(res2$r,digits = 2), round(res2$P,digits = 2))
         }
       }
     }
   }, ignoreNULL = FALSE)
 
-  # data_cormat <- eventReactive(input$action,{
-  #   req(input$loc, input$season)
-  #   if (input$loc == "All" & input$season =="All") {
-  #     mat <- as.matrix(data_f %>% select(householdsize,Collectexp,`Quantity(bucket)`))
-  #     res2 <- rcorr(mat)
-  #     flat_matrix<-flattenCorrMatrix(round(res2$r,digits = 2), round(res2$P,digits = 2))
-  #   } else if (input$loc != "All") {
-  #     if (input$season =="All") {
-  #       dat <-data_f %>%
-  #         filter(locality == input$loc) %>%
-  #         select(householdsize,Collectexp,`Quantity(bucket)`)
-  #       mat <- as.matrix(dat)
-  #       res2 <- rcorr(mat)
-  #       flat_matrix<-flattenCorrMatrix(round(res2$r,digits = 2), round(res2$P,digits = 2))
-  #     } else {
-  #       dat <-data_f %>%
-  #         filter(locality == input$loc,
-  #                Season == input$season) %>%
-  #         select(householdsize,Collectexp,`Quantity(bucket)`)
-  #       mat <- as.matrix(dat)
-  #       res2 <- rcorr(mat)
-  #       flat_matrix<-flattenCorrMatrix(round(res2$r,digits = 2), round(res2$P,digits = 2))
-  #     }
-  #   }
-  # }, ignoreNULL = FALSE)
 
   #correlation matrix
   # output$cor_mat <- DT::renderDataTable({
@@ -1180,6 +1155,7 @@ server = function(input, output, session) {
   # })
 
   output$cor_mat <- DT::renderDataTable({
+
     validate(
         need(nrow(data_cormat()) > 0, paste('No data exists for the combination region = ', input$loc,
                                             'and season = ', input$season, 'of correlation matrix')))
@@ -1204,7 +1180,7 @@ server = function(input, output, session) {
           filter(locality == input$loc,
                  Season == input$season) %>%
           select(householdsize,Collectexp,`Quantity(bucket)`)
-        cor <- cor(data)
+       cor <- cor(data)
       }
     }
   }, ignoreNULL = FALSE)
@@ -1213,10 +1189,11 @@ server = function(input, output, session) {
   output$corr <- renderPlot({
     validate(
       need(data_corr()!="NA", paste('No data exists for the combination region = ', input$loc,
-                                        'and season = ', input$season, 'for the correlation matrix')))
+                                    'and season = ', input$season, 'for the correlation matrix')))
     corrplot(data_corr(), method="circle", order = "hclust", col=brewer.pal(n=8, name="RdBu"),tl.col="black")
-
   })
+
+
 
   #data for tests
   filteblue_datat1 <- eventReactive(input$action,{
@@ -1247,7 +1224,7 @@ server = function(input, output, session) {
   #test1
   output$test1 <- renderPrint({
     if (input$season !="rainy season" & input$season !="All") {
-      paste("Not available because of no data")
+      paste("Not available because of not enough data")
     } else {
       if (filteblue_datat1()>0.05) {
         paste("The probability of the chi-2 test is:", filteblue_datat1(), "so the variables are not linked")
@@ -1285,7 +1262,7 @@ server = function(input, output, session) {
 
   output$test2 <- renderPrint({
     if (input$season !="rainy season" & input$season !="All") {
-      paste("Not available because of no data")
+      paste("Not available because of not enough data")
     } else {
       if (filteblue_data2()>0.05) {
         paste("The probability of the chi-2 test is:", filteblue_data2(), "so the variables are not linked")
