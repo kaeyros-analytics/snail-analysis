@@ -1224,7 +1224,7 @@ server = function(input, output, session) {
   #test1
   output$test1 <- renderPrint({
     if (input$season !="rainy season" & input$season !="All") {
-      paste("Not available because of not enough data")
+      paste("Statistic of chi-2 not available because number of observations < 5")
     } else {
       if (filteblue_datat1()>0.05) {
         paste("The probability of the chi-2 test is:", filteblue_datat1(), "so the variables are not linked")
@@ -1262,7 +1262,7 @@ server = function(input, output, session) {
 
   output$test2 <- renderPrint({
     if (input$season !="rainy season" & input$season !="All") {
-      paste("Not available because of not enough data")
+      paste("Statistic of chi-2 not available because number of observations < 5")
     } else {
       if (filteblue_data2()>0.05) {
         paste("The probability of the chi-2 test is:", filteblue_data2(), "so the variables are not linked")
